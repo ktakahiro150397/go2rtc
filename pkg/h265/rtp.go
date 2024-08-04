@@ -3,9 +3,11 @@ package h265
 import (
 	"encoding/binary"
 
+	"github.com/AlexxIT/go2rtc/internal/app"
 	"github.com/AlexxIT/go2rtc/pkg/core"
 	"github.com/AlexxIT/go2rtc/pkg/h264"
 	"github.com/pion/rtp"
+	"github.com/rs/zerolog"
 )
 
 func RTPDepay(codec *core.Codec, handler core.HandlerFunc) core.HandlerFunc {
@@ -14,6 +16,8 @@ func RTPDepay(codec *core.Codec, handler core.HandlerFunc) core.HandlerFunc {
 
 	buf := make([]byte, 0, 512*1024) // 512K
 	var nuStart int
+	var log zerolog.Logger = app.GetLogger("h265")
+	log.Level(zerolog.TraceLevel)
 
 	return func(packet *rtp.Packet) {
 		data := packet.Payload
@@ -54,6 +58,17 @@ func RTPDepay(codec *core.Codec, handler core.HandlerFunc) core.HandlerFunc {
 				return
 			case 1: // end
 				buf = append(buf, data[3:]...)
+
+				buf_len := len(buf)
+				log.Trace().Msgf("[h265] end nuStart=%d, len(buf): %d", nuStart, buf_len)
+
+				if nuStart > buf_len {
+					log.Debug().Msgf("[h265] nuStart > buf_len: %d > %d. This will cause something error?", nuStart, buf_len)
+					log.Debug().Msgf("[h265] len(buf)-nuStart-4=%d.", len(buf)-nuStart-4)
+					log.Trace().Msgf("[h265] buf[nuStart:] content : ")
+					log.Trace().Msgf("%v", buf[nuStart:])
+				}
+
 				binary.BigEndian.PutUint32(buf[nuStart:], uint32(len(buf)-nuStart-4))
 			case 3: // wrong RFC 7798 realisation from OpenIPC project
 				// A non-fragmented NAL unit MUST NOT be transmitted in one FU; i.e.,
