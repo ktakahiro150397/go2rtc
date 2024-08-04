@@ -2,12 +2,11 @@ package h265
 
 import (
 	"encoding/binary"
+	"fmt"
 
-	"github.com/AlexxIT/go2rtc/internal/app"
 	"github.com/AlexxIT/go2rtc/pkg/core"
 	"github.com/AlexxIT/go2rtc/pkg/h264"
 	"github.com/pion/rtp"
-	"github.com/rs/zerolog"
 )
 
 func RTPDepay(codec *core.Codec, handler core.HandlerFunc) core.HandlerFunc {
@@ -16,8 +15,6 @@ func RTPDepay(codec *core.Codec, handler core.HandlerFunc) core.HandlerFunc {
 
 	buf := make([]byte, 0, 512*1024) // 512K
 	var nuStart int
-	var log zerolog.Logger = app.GetLogger("h265")
-	log.Level(zerolog.TraceLevel)
 
 	return func(packet *rtp.Packet) {
 		data := packet.Payload
@@ -60,13 +57,13 @@ func RTPDepay(codec *core.Codec, handler core.HandlerFunc) core.HandlerFunc {
 				buf = append(buf, data[3:]...)
 
 				buf_len := len(buf)
-				log.Trace().Msgf("[h265] end nuStart=%d, len(buf): %d", nuStart, buf_len)
 
+				fmt.Printf("[h265] end nuStart=%d, len(buf): %d", nuStart, buf_len)
 				if nuStart > buf_len {
-					log.Debug().Msgf("[h265] nuStart > buf_len: %d > %d. This will cause something error?", nuStart, buf_len)
-					log.Debug().Msgf("[h265] len(buf)-nuStart-4=%d.", len(buf)-nuStart-4)
-					log.Trace().Msgf("[h265] buf[nuStart:] content : ")
-					log.Trace().Msgf("%v", buf[nuStart:])
+					fmt.Printf("[h265] nuStart > buf_len: %d > %d. This will cause something error?", nuStart, buf_len)
+					fmt.Printf("[h265] len(buf)-nuStart-4=%d.", len(buf)-nuStart-4)
+					fmt.Printf("[h265] buf[nuStart:] content : ")
+					fmt.Printf("%v", buf[nuStart:])
 				}
 
 				binary.BigEndian.PutUint32(buf[nuStart:], uint32(len(buf)-nuStart-4))
