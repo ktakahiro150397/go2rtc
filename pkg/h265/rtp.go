@@ -58,16 +58,20 @@ func RTPDepay(codec *core.Codec, handler core.HandlerFunc) core.HandlerFunc {
 
 				buf_len := len(buf)
 
-				fmt.Printf("[h265] end nuStart=%d, len(buf): %d\n", nuStart, buf_len)
+				if nuStart == 0 {
+					fmt.Printf("[h265] nuStart == 0. This will cause something error?\n")
+				}
+
 				if nuStart > buf_len {
 					fmt.Printf("[h265] nuStart > buf_len: %d > %d. This will cause something error?\n", nuStart, buf_len)
 					fmt.Printf("[h265] len(buf)-nuStart-4=%d.\n", len(buf)-nuStart-4)
 					fmt.Printf("[h265] buf[nuStart:] content : \n")
-					fmt.Printf("%v", buf[nuStart:])
+					fmt.Printf("%v", buf[0:])
 					fmt.Printf("\n")
 				}
 
 				binary.BigEndian.PutUint32(buf[nuStart:], uint32(len(buf)-nuStart-4))
+				nuStart = 0
 			case 3: // wrong RFC 7798 realisation from OpenIPC project
 				// A non-fragmented NAL unit MUST NOT be transmitted in one FU; i.e.,
 				// the Start bit and End bit must not both be set to 1 in the same FU
