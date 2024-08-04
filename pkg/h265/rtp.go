@@ -58,12 +58,13 @@ func RTPDepay(codec *core.Codec, handler core.HandlerFunc) core.HandlerFunc {
 
 				buf_len := len(buf)
 
-				fmt.Printf("[h265] end nuStart=%d, len(buf): %d", nuStart, buf_len)
+				fmt.Printf("[h265] end nuStart=%d, len(buf): %d\n", nuStart, buf_len)
 				if nuStart > buf_len {
-					fmt.Printf("[h265] nuStart > buf_len: %d > %d. This will cause something error?", nuStart, buf_len)
-					fmt.Printf("[h265] len(buf)-nuStart-4=%d.", len(buf)-nuStart-4)
-					fmt.Printf("[h265] buf[nuStart:] content : ")
+					fmt.Printf("[h265] nuStart > buf_len: %d > %d. This will cause something error?\n", nuStart, buf_len)
+					fmt.Printf("[h265] len(buf)-nuStart-4=%d.\n", len(buf)-nuStart-4)
+					fmt.Printf("[h265] buf[nuStart:] content : \n")
 					fmt.Printf("%v", buf[nuStart:])
+					fmt.Printf("\n")
 				}
 
 				binary.BigEndian.PutUint32(buf[nuStart:], uint32(len(buf)-nuStart-4))
